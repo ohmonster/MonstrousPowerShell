@@ -1,0 +1,57 @@
+Add-Type -TypeDefinition @"
+    public enum BranchName
+    {
+        Dev,
+        Test,
+        Prod
+    }
+"@
+
+function Get-Branch{
+    [OutputType([String])]
+    Param 
+    (
+        [Parameter(Mandatory=$true)]
+        [BranchName]$branch
+    )
+
+    switch ($branch) {
+        "Dev" { "i:\tfs\PTNWebAll\dev" }
+        "Test" { "i:\tfs\PTNWebAll\test"}
+        "Prod" { "i:\tfs\PTNWebAll\prod"}
+    }
+}
+
+function Merge-Code{
+     [CmdletBinding(PositionalBinding=$true)]
+    Param(
+        [Parameter(Position=0,Mandatory=$true)]
+        [BranchName]$source,
+        [Parameter(Position=1,Mandatory=$true)]
+        [BranchName]$target,
+        [Parameter(Position=2,Mandatory=$true)]
+        [int]$sourceChangeset,
+        [Parameter(Position=3,Mandatory=$false)]
+        [int]$targetChangeset=$sourceChangeset,
+        [Parameter(Mandatory=$false)]
+        [bool]$discard = $false,
+        [Parameter(Mandatory=$false)]
+        [String]$tfExePath = "c:/Program Files (x86)/Microsoft Visual Studio/2017/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/tf"
+    )
+    #"$source $target $sourceChangeset $targetChangeset $discard"
+    $Local:sourcePath = Get-Branch $source
+    $Local:targetPath = Get-Branch $target
+    $Local:changesets = "C"+$sourceChangeset + "~C" + $targetChangeset
+
+
+    if ($discard -eq $true)
+    {
+        & $tfExePath vc merge /recursive $Local:sourcePath $Local:targetPath /version:$changesets /discard
+    }
+    else {
+        #Write-Host "$tfExePath vc merge /recursive $Local:sourcePath $Local:targetPath /version:$changesets"
+        & $tfExePath vc merge /recursive $Local:sourcePath $Local:targetPath /version:$changesets
+    }
+    
+}
+
