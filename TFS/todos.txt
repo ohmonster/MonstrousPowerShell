@@ -1,0 +1,6 @@
+  
+#add preview for merge
+#checkin command ref https://docs.microsoft.com/en-us/azure/devops/repos/tfvc/checkin-command?view=azure-devops
+---do we want to shelve first to "stage" it or what?
+
+proper readme
