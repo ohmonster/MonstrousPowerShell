@@ -7,33 +7,21 @@
     }
 "@
 
-
-function Get-Branch{
-    [OutputType([String])]
-    Param 
-    (
-        [Parameter(Mandatory=$true)]
-        [BranchName]$branch
-    )
-
-    switch ($branch) {
-        "Dev" { "i:\tfs\PTNWebAll\dev" }
-        "Test" { "i:\tfs\PTNWebAll\test"}
-        "Prod" { "i:\tfs\PTNWebAll\prod"}
+Add-Type -TypeDefinition @"
+    public enum ProjectName
+    {
+        PTNWebAll,
+        Databases,
+        Tracker
     }
-}
+"@
+
 
 <#
 .SYNOPSIS
-Merge code in PerfectVision's PTNWebAll projects with a slightly easier syntax than the tf command
+Merge code in PerfectVision's projects with a slightly easier syntax than the tf command
 .DESCRIPTION
-For more information about TFS command line info see
-
-
-This commandlet makes 
-     Merge-Code Dev Test 23426
- Functionally equivalent to 
- tf vc merge /recursive i:\tfs\PTNWebAll\Dev i:\tfs\PTNWebAll\test  /version:C23426~C23426
+    Streamlined command-line merges for Perfect-Vision tfs changesets
 
 .PARAMETER Source
 Source branch, may be one of: Dev,Test,Prod
@@ -48,12 +36,21 @@ Ignores the merge history and merges the specified changes from the source into 
 If combined with the Discard flag, will resolve any merge conflicts as keep the destination. 
 .PARAMETER Discard
 If present, tfs does not perform the merge operation, but updates the merge history to track that the merge occurred. This discards a changeset from being used for a particular merge.
+.PARAMETER LocalPath
+The local path to where you keep tfs files on your system. Defaults to "I:/tfs". Do not include trailing slashes.
 .PARAMETER tfExePath
 The full path to tf.exe on your system.
 .NOTES
-The command
-tf vc merge /recursive i:\tfs\PTNWebAll\Dev i:\tfs\PTNWebAll\test  /version:C23426~C23426
+This commandlet makes 
+     Merge-Code Dev Test 23426
+ Functionally equivalent to 
+     tf vc merge /recursive $/PTNWebAll/Dev $/PTNWebAll/Test  /version:C23426~C23426
+
+For more information about TFS command line info see
+    https://docs.microsoft.com/en-us/azure/devops/repos/tfvc/use-team-foundation-version-control-commands?view=azure-devops
+
 #>
+
 function Merge-Code{
      [CmdletBinding(PositionalBinding=$true)]
     Param(
@@ -65,16 +62,22 @@ function Merge-Code{
         [int]$First,
         [Parameter(Position=3,Mandatory=$false)]
         [int]$Last=$First,
+        [Parameter(Mandatory=$false)]
+        [ProjectName]$Project="PTNWebAll",
 		[Parameter(Mandatory=$false)]
         [Switch]$Force,
         [Parameter(Mandatory=$false)]
         [Switch]$Discard,
         [Parameter(Mandatory=$false)]
+        [Switch]$Preview,
+        [Parameter(Mandatory=$false)]
+        [String]$LocalPath= "I:/TFS",
+        [Parameter(Mandatory=$false)]
         [String]$tfExePath = "c:/Program Files (x86)/Microsoft Visual Studio/2017/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/tf"
     )
     #"$Source $Target $First $Last $Discard"
-    $Local:sourcePath = Get-Branch $Source
-    $Local:targetPath = Get-Branch $Target
+    $Local:sourcePath = "$localFilePath/$Project/$Source"
+    $Local:targetPath = "$localFilePath/$Project/$Target"
     $Local:changesets = "C"+$First + "~C" + $Last
 
 	
