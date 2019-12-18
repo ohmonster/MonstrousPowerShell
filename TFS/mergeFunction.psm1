@@ -106,3 +106,4 @@ function Merge-Code{
 
 
 
+Export-Module Merge-Code
