@@ -16,6 +16,14 @@ Add-Type -TypeDefinition @"
     }
 "@
 
+Add-Type -TypeDefinition @"
+    public enum Format
+    {
+        Brief,
+        Detailed
+    }
+"@
+
 $collection="http://server23:8080/tfs/Perfect10"
 $comment=''
 $tfsContent = tf workspaces /collection:'http://server23:8080/tfs/Perfect10' /format:detailed | Select-String -Pattern "$/:" -SimpleMatch | %{$_ -Replace "\$/: ",""}
@@ -128,4 +136,31 @@ function Merge-Code{
     
 }
 
-Export-ModuleMember -Function Merge-Code
+<#
+.SYNOPSIS
+View Pending Changes
+
+
+.PARAMETER Format
+Brief or Detailed
+
+.PARAMETER tfExePath
+The full path to tf.exe on your system. If tf.exe isn't found at the default path
+
+.LINK
+    https://docs.microsoft.com/en-us/azure/devops/repos/tfvc/use-team-foundation-version-control-commands?view=azure-devops
+.LINK
+    https://github.com/ohmonster/MonstrousPowerShell/tree/master/TFS
+
+#>
+function Merge-Status{
+    Param(
+        [Parameter(Mandatory=$false)]
+        [Format]$Format = 'Detailed',
+        [Parameter(Mandatory=$false)]
+        [String]$tfExePath = "c:/Program Files (x86)/Microsoft Visual Studio/2017/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/tf"
+    )
+    & $tfExePath vc status /collection:$collection /format:$Format
+}
+
+Export-ModuleMember -Function Merge-Code, Merge-Status

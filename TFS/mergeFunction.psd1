@@ -7,7 +7,7 @@
 	Description = 'Shorthand functions for performing tf  merges at work'
 	PowerShellVersion='5.0'
 	FunctionsToExport=@(
-		'Merge-Code'
+		'Merge-Code','Merge-Status'
 	)
 	# Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 	PrivateData = @{
